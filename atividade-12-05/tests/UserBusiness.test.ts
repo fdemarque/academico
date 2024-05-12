@@ -90,3 +90,71 @@ describe('Testes para getAllUsers', () => {
         expect(users[1]).toHaveProperty('_role', 'user');
     });
 });
+
+describe('Testes para getUserProfile', () => {
+    test('Deve retornar o perfil do usuário existente', async () => {
+        // Mock para a função getUserById da classe UserDatabase
+        const mockedGetUserById = jest.fn();
+        mockedGetUserById.mockResolvedValue(userToBeTested);
+
+        // Mock para a instância de UserDatabase
+        const userDb = new UserDatabase();
+        (userDb as unknown as jest.Mock).mockImplementationOnce(() => ({
+            getUserById: mockedGetUserById,
+        }));
+
+        // Criando uma instância de UserBusiness com o UserDatabase criado
+        const userBusinessInstance = new UserBusiness(userDb);
+
+        // Obtendo o perfil do usuário existente
+        const userId = userToBeTested.id.toString();
+        const userProfile = await userBusinessInstance.getUserProfile(userId);
+
+        // Verificando se o perfil do usuário foi retornado corretamente
+        const { id, name, email } = userToBeTested;
+        expect(userProfile).toEqual({
+            id,
+            name,
+            email,
+        });
+    });
+
+    test('Deve lançar um erro ao tentar obter o perfil de um usuário inexistente', async () => {
+        // Mock para a função getUserById da classe UserDatabase
+        const mockedGetUserById = jest.fn();
+        mockedGetUserById.mockResolvedValue(null); // Simulando que o usuário não foi encontrado
+
+        // Mock para a instância de UserDatabase
+        const userDb = new UserDatabase();
+        (userDb as unknown as jest.Mock).mockImplementationOnce(() => ({
+            getUserById: mockedGetUserById,
+        }));
+
+        // Criando uma instância de UserBusiness com o UserDatabase criado
+        const userBusinessInstance = new UserBusiness(userDb);
+
+        // Tentando obter o perfil de um usuário inexistente
+        const userId = '9999'; // ID de um usuário que não existe no mock
+        await expect(userBusinessInstance.getUserProfile(userId)).rejects.toThrow('User not found');
+    });
+
+    test('Deve lançar um erro ao tentar obter o perfil de um usuário não autorizado', async () => {
+        // Mock para a função getUserById da classe UserDatabase
+        const mockedGetUserById = jest.fn();
+        mockedGetUserById.mockResolvedValue(userToBeTested);
+
+        // Mock para a instância de UserDatabase
+        const userDb = new UserDatabase();
+        (userDb as unknown as jest.Mock).mockImplementationOnce(() => ({
+            getUserById: mockedGetUserById,
+        }));
+
+        // Criando uma instância de UserBusiness com o UserDatabase criado
+        const userBusinessInstance = new UserBusiness(userDb);
+
+        // Obtendo o perfil de um usuário não autorizado (com ID diferente do usuário mockado)
+        const unauthorizedUserId = '9999'; // ID não autorizado
+        await expect(userBusinessInstance.getUserProfile(unauthorizedUserId)).rejects.toThrow('Unauthorized');
+    });
+});
+

@@ -1,6 +1,3 @@
-import { USER_ROLES } from "../types/UserRole";
-
-
 export class UserBusiness {
     private userDatabase: any;
 
@@ -34,5 +31,17 @@ export class UserBusiness {
             role: user._role,
         }));
     }
-    
+
+    public async getUserProfile(userId: string) {
+        const user = await this.userDatabase.getUserById(userId);
+        if (!user) {
+            throw new Error("User not found");
+        }
+        return {
+            id: user.id,
+            name: user.name,
+            email: user.email,
+            role: user._role,
+        };
+    }
 }
