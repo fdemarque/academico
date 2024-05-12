@@ -20,6 +20,7 @@ describe("Testando getUserByID", () => {
             expect(error.message).toBe("User with id 5657 not found");
         }
     });
+
     test("getUserById - O usuário existe", async () => {
         // Criando uma instância de UserDatabase com o mock de usuário
         const userDb = new UserDatabase();
@@ -34,52 +35,58 @@ describe("Testando getUserByID", () => {
         // Verificando se o usuário foi encontrado
         expect(user?.id).toBe(1234);
     });
-    describe('Testes para getAllUsers', () => {
-        // Teste para erro de não autorizado
-        it('Deve lançar um erro de não autorizado', async () => {
-            // Mock para a função getAllUsers da classe UserDatabase
-            const mockedGetAllUsers = jest.fn();
-            // Simulando que a função getAllUsers não retornou nenhum usuário
-            mockedGetAllUsers.mockResolvedValue([]);
+});
 
-            // Mock para a instância de UserDatabase
-            (UserDatabase as jest.Mock).mockImplementationOnce(() => ({
-                getAllUsers: mockedGetAllUsers,
-            }));
+describe('Testes para getAllUsers', () => {
+    // Teste para erro de não autorizado
+    it('Deve lançar um erro de não autorizado', async () => {
+        // Mock para a função getAllUsers da classe UserDatabase
+        const mockedGetAllUsers = jest.fn();
+        // Simulando que a função getAllUsers não retornou nenhum usuário
+        mockedGetAllUsers.mockResolvedValue([]);
 
-            // Testando se a função getAllUsers lança um erro de não autorizado
-            await expect(getAllUsers('user')).rejects.toThrowError('Unauthorized');
-        });
+        // Mock para a instância de UserDatabase
+        const userDb = new UserDatabase();
+        (userDb as unknown as jest.Mock).mockImplementationOnce(() => ({
+            getAllUsers: mockedGetAllUsers,
+        }));
 
-        // Teste para resposta de sucesso
-        it('Deve retornar a lista de usuários', async () => {
-            // Mock para a função getAllUsers da classe UserDatabase
-            const mockedGetAllUsers = jest.fn();
-            // Simulando que a função getAllUsers retornou uma lista de usuários
-            mockedGetAllUsers.mockResolvedValue([
-                { id: 1, name: 'User 1', email: 'user1@example.com', _role: 'admin' },
-                { id: 2, name: 'User 2', email: 'user2@example.com', _role: 'user' },
-            ]);
+        // Criando uma instância de UserBusiness com o UserDatabase criado
+        const userBusinessInstance = new UserBusiness(userDb);
 
-            // Mock para a instância de UserDatabase
-            (UserDatabase as jest.Mock).mockImplementationOnce(() => ({
-                getAllUsers: mockedGetAllUsers,
-            }));
-
-            // Testando se a função getAllUsers retorna a lista de usuários corretamente
-            const users = await getAllUsers('admin');
-            expect(users).toHaveLength(2);
-            expect(users[0]).toHaveProperty('id', 1);
-            expect(users[0]).toHaveProperty('name', 'User 1');
-            expect(users[0]).toHaveProperty('email', 'user1@example.com');
-            expect(users[0]).toHaveProperty('_role', 'admin');
-            expect(users[1]).toHaveProperty('id', 2);
-            expect(users[1]).toHaveProperty('name', 'User 2');
-            expect(users[1]).toHaveProperty('email', 'user2@example.com');
-            expect(users[1]).toHaveProperty('_role', 'user');
-        });
+        // Testando se a função getAllUsers lança um erro de não autorizado
+        await expect(userBusinessInstance.getAllUsers('user')).rejects.toThrow('Unauthorized');
     });
-    function getAllUsers(arg0: string) {
-        throw new Error("Function not implemented.");
-}
 
+    // Teste para resposta de sucesso
+    it('Deve retornar a lista de usuários', async () => {
+        // Mock para a função getAllUsers da classe UserDatabase
+        const mockedGetAllUsers = jest.fn();
+        // Simulando que a função getAllUsers retornou uma lista de usuários
+        mockedGetAllUsers.mockResolvedValue([
+            { id: 12345, name: 'Flaivo', email: 'flaivo@lab.com', _role: 'admin' },
+            { id: 1234, name: 'Flavio', email: 'flavio@lab.com', _role: 'user' },
+        ]);
+
+        // Mock para a instância de UserDatabase
+        const userDb = new UserDatabase();
+        (userDb as unknown as jest.Mock).mockImplementationOnce(() => ({
+            getAllUsers: mockedGetAllUsers,
+        }));
+
+        // Criando uma instância de UserBusiness com o UserDatabase criado
+        const userBusinessInstance = new UserBusiness(userDb);
+
+        // Testando se a função getAllUsers retorna a lista de usuários corretamente
+        const users = await userBusinessInstance.getAllUsers('admin');
+        expect(users).toHaveLength(2);
+        expect(users[0]).toHaveProperty('id', 12345);
+        expect(users[0]).toHaveProperty('name', 'Flaivo');
+        expect(users[0]).toHaveProperty('email', 'flaivo@lab.com');
+        expect(users[0]).toHaveProperty('_role', 'admin');
+        expect(users[1]).toHaveProperty('id', 1234);
+        expect(users[1]).toHaveProperty('name', 'Flavio');
+        expect(users[1]).toHaveProperty('email', 'flavio@lab.com');
+        expect(users[1]).toHaveProperty('_role', 'user');
+    });
+});
