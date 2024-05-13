@@ -82,9 +82,9 @@ app.delete("/teams/:id", async (req: Request, res: Response) => {
 });
 
 // Endpoint para atualizar o logo de um time
-app.put("/teams/:id/logo", async (req: Request, res: Response) => {
+app.put("/teams/:id/motto", async (req: Request, res: Response) => {
   const teamId = req.params.id;
-  const newLogo = req.body.logo;
+  const newMotto = req.body.Motto;
 
   try {
     const teamExists = await connection.select().from("TEAMS").where("ID_TEAM", teamId).first();
@@ -92,7 +92,7 @@ app.put("/teams/:id/logo", async (req: Request, res: Response) => {
       return res.status(404).json({ error: "Time não encontrado" });
     }
 
-    await connection("TEAMS").where("ID_TEAM", teamId).update("MOTTO_TEAM", newLogo);
+    await connection("TEAMS").where("ID_TEAM", teamId).update("MOTTO_TEAM", newMotto);
 
     res.status(200).json({ message: "Logo do time atualizado com sucesso!" });
   } catch (error) {
