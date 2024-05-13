@@ -55,7 +55,16 @@ app.delete("/teams/:id", async (req: Request, res: Response) => {
 // Endpoint para atualizar o logo de um time
 app.put("/teams/:id/logo", async (req: Request, res: Response) => {
   const teamId = req.params.id;
+  const newLogo = req.body.logo;
+
   try {
+    const teamExists = await connection.select().from("TEAMS").where("ID_TEAM", teamId).first();
+    if (!teamExists) {
+      return res.status(404).json({ error: "Time não encontrado" });
+    }
+
+    await connection("TEAMS").where("ID_TEAM", teamId).update("MOTTO_TEAM", newLogo);
+
     res.status(200).json({ message: "Logo do time atualizado com sucesso!" });
   } catch (error) {
     console.error("Erro ao atualizar logo do time:", error);
@@ -63,10 +72,11 @@ app.put("/teams/:id/logo", async (req: Request, res: Response) => {
   }
 });
 
+
 const server = app.listen(process.env.PORT || 3003, () => {
   if (server) {
     const address = server.address() as AddressInfo;
-    console.log(`Server is running in http://localhost:${address.port}`);
+    console.log(`Server is running in http://localhost:3003`);
   } else {
     console.error(`Failure upon starting server.`);
   }
