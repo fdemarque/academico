@@ -2,7 +2,7 @@ import knex from 'knex';
 import 'dotenv/config'
 
 const connection = knex({
-    client: "postgresql",
+    client: "postgres",
     connection: {
         host: process.env.DB_HOST,
         port: 5432,
