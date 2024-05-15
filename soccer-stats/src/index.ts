@@ -4,7 +4,8 @@ import cors from "cors";
 import { AddressInfo } from "net";
 import connection from "./connection";
 import bcrypt from 'bcryptjs';
-import jwt from 'jsonwebtoken';
+import { generateToken } from './services/authenticator';
+import { User, UserRole } from './services/types';
 
 const app = express();
 
@@ -14,7 +15,9 @@ app.use(cors());
 // Endpoint para login no sistema
 app.post('/login', async (req: Request, res: Response) => {
   const { username, password } = req.body;
-
+  if (!username || !password){
+      return res.status(401).json({ error: 'Parâmetros incorretos' });
+  }
   try {
     const user = await connection('users').where('NAME_USER', username).first();
     if (!user) {
@@ -26,9 +29,16 @@ app.post('/login', async (req: Request, res: Response) => {
       return res.status(401).json({ error: 'Credenciais inválidas' });
     }
 
-    const token = jwt.sign({ id: user.id, username: user.username }, process.env.JWT_SECRET || 'your-secret', {
-      expiresIn: '1h',
-    });
+    const userPayload: User = {
+      id: user.ID_USER,
+      nameUser: user.NAME_USER,
+      address: user.ADDRESS,
+      passkey: user.PASSKEY,
+      roleUser: user.ROLE_USER as UserRole,
+      tokenAuth: user.TOKEN_AUTH
+    };
+
+    const token = generateToken(userPayload);
 
     res.status(200).json({ token });
   } catch (error) {
