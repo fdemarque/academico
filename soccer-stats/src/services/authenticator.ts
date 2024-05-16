@@ -1,5 +1,6 @@
 import jwt from 'jsonwebtoken';
 import { User, UserRole } from './types';
+import { NextFunction } from 'express';
 
 interface TokenPayload {
     id: string;
